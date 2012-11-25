@@ -1,0 +1,56 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+require 'methadone'
+require 'yourjargon'
+require 'rest_client'
+require 'json'
+require 'pp'
+
+class App
+  include Methadone::Main
+  include Methadone::CLILogging
+
+  main do |term|
+    response = RestClient.get 'http://localhost:3000/terms', {params: { search: term} }
+    terms = JSON.parse(response)["terms"]
+    if terms.count == 1
+      pp terms.first
+    elsif terms.count > 1
+      puts "#{terms.count} number of matches found for that term name."
+      terms.each {|t| puts t["name"] }
+    else
+      puts "No match found"
+    end
+    # your program code here
+    # You can access CLI options via
+    # the options Hash
+  end
+
+  # supplemental methods here
+
+  # Declare command-line interface here
+
+  description "Query the YourJargon website from the command line."
+  #
+  # Accept flags via:
+  # on("--flag VAL","Some flag")
+  # options[flag] will contain VAL
+  #
+  # Specify switches via:
+  # on("--[no-]switch","Some switch")
+  #
+  # Or, just call OptionParser methods on opts
+  #
+  # Require an argument
+  # arg :some_arg 
+  #
+  # # Make an argument optional
+  arg :term, :optional
+
+  version Yourjargon::VERSION
+
+  use_log_level_option
+
+  go!
+end
